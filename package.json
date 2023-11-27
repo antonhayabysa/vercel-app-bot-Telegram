@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "grammy": "^1.19.2",
+    "mongodb": "^6.3.0",
     "vercel-grammy": "^0.2.1"
   },
   "devDependencies": {

@@ -1,17 +1,47 @@
-import {Bot} from "grammy";
+import { Bot, InlineKeyboard } from "grammy";
 
 export const {
-
-    // Telegram bot token from t.me/BotFather
-    TELEGRAM_BOT_TOKEN: token,
-
-    // Secret token to validate incoming updates
-    TELEGRAM_SECRET_TOKEN: secretToken = String(token).split(":").pop()
-
+  TELEGRAM_BOT_TOKEN: token,
+  TELEGRAM_SECRET_TOKEN: secretToken = String(token).split(":").pop(),
 } = process.env;
 
-// Default grammY bot instance
 export const bot = new Bot(token);
 
-// Sample handler for a simple echo bot
-bot.on("message:text", ctx => ctx.reply(ctx.msg.text));
+// Функция для создания главного меню
+function mainMenu() {
+  return new InlineKeyboard()
+    .text("Расписание", "schedule")
+    .row()
+    .text("Мероприятия", "events")
+    .row()
+    .text("Связь с воспитателями", "contact");
+}
+
+// Обработчик команды /start
+bot.command("start", (ctx) => {
+  ctx.reply("Добро пожаловать в меню детского сада!", {
+    reply_markup: mainMenu(),
+  });
+});
+
+// Обработчики для каждой кнопки
+bot.callbackQuery("schedule", (ctx) =>
+  ctx.reply("Здесь будет информация о расписании...")
+);
+bot.callbackQuery("events", (ctx) =>
+  ctx.reply("Здесь будет информация о мероприятиях...")
+);
+bot.callbackQuery("contact", (ctx) => ctx.reply("Контакты воспитателей: ..."));
+
+// Расширенная обработка текстовых сообщений
+bot.on("message:text", (ctx) => {
+  const text = ctx.message.text.toLowerCase();
+  if (text.includes("стоимость")) {
+    ctx.reply("Стоимость наших услуг составляет...");
+  } else if (text.includes("режим работы")) {
+    ctx.reply("Мы работаем с 8:00 до 19:00...");
+  } else {
+    // Ответ по умолчанию, если текст не распознан
+    ctx.reply("Я вас не понимаю. Используйте команды меню для навигации.");
+  }
+});
