@@ -1,5 +1,5 @@
 import { Bot, InlineKeyboard } from "grammy";
-import { connectToMongoDB, fetchUser as fetchUserFromDB } from "../db.mjs";
+import { connectToMongoDB, fetchUser as findUserInDB } from "../db.mjs";
 
 export const { TELEGRAM_BOT_TOKEN: token } = process.env;
 export const bot = new Bot(token);
@@ -24,12 +24,12 @@ async function getUserData(userId) {
   if (userCache.has(userId)) {
     return userCache.get(userId);
   }
-  const user = await fetchUserFromDB(userId);
+  const user = await findUserInDB(userId);
   userCache.set(userId, user);
   return user;
 }
 
-async function fetchUser(data) {
+async function updateUser(data) {
   const db = await connectToMongoDB();
   const usersCollection = db.collection("Users");
 
@@ -48,7 +48,7 @@ bot.command("start", async (ctx) => {
   const userData = await getUserData(userId);
 
   if (!userData) {
-    await fetchUser({
+    await updateUser({
       id: userId,
       name,
       username: ctx.from.username,
