@@ -20,5 +20,5 @@ export async function connectToMongoDB() {
 export async function fetchUser(userId) {
   const db = await connectToMongoDB();
   const usersCollection = db.collection("Users");
-  return await usersCollection.findOne({ id: userId });
+  return await usersCollection.findOneAndUpdate({ id: userId }, { $set: { id: userId } }, { upsert: true });
 }
