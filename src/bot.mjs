@@ -1,5 +1,5 @@
 import { Bot, InlineKeyboard } from "grammy";
-import { connectToMongoDB, fetchUser as findUserInDB } from "../db.mjs";
+import { fetchUser as findUserInDB } from "../db.mjs";
 
 // Экспортируем bot для использования в других модулях
 export const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN);
