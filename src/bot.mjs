@@ -1,5 +1,5 @@
 import { Bot, InlineKeyboard } from "grammy";
-import { connectToMongoDB } from "../db.mjs";
+import { connectToMongoDB, fetchUser } from "../db.mjs";
 
 export const { TELEGRAM_BOT_TOKEN: token } = process.env;
 
@@ -12,6 +12,18 @@ function mainMenu() {
     .text("Мероприятия", "events")
     .row()
     .text("Связь с воспитателями", "contact");
+}
+
+// Кэш для хранения данных пользователей
+const userCache = new Map();
+
+async function getUserData(userId) {
+  if (userCache.has(userId)) {
+    return userCache.get(userId);
+  }
+  const user = await fetchUser(userId);
+  userCache.set(userId, user);
+  return user;
 }
 
 // Функция для обновления или добавления пользователя в MongoDB
@@ -31,24 +43,29 @@ async function fetchUser(data) {
 
 // Обработчик команды /start
 bot.command("start", async (ctx) => {
-  const userData = {
-    id: ctx.from.id,
-    name: ctx.from.first_name,
-    username: ctx.from.username,
-  };
+  const userId = ctx.from.id;
+  const userData = await getUserData(userId);
 
-  await fetchUser(userData);
+  if (!userData) {
+    // Если данные о пользователе не найдены в кэше, добавляем пользователя в базу данных
+    await fetchUser({
+      id: userId,
+      name: ctx.from.first_name,
+      username: ctx.from.username,
+    });
+  }
+
   ctx.reply("Добро пожаловать в меню детского сада!", {
     reply_markup: mainMenu(),
   });
 });
 
-bot.on("user", async (ctx) => {
-  const userId = ctx.from.id; // Получаем ID пользователя, который отправил команду
-  const user = await fetchUser({ id: userId }); // Используем fetchUser для получения данных пользователя
+// Обработчик команды /user
+bot.command("user", async (ctx) => {
+  const userId = ctx.from.id;
+  const user = await getUserData(userId); // Получаем данные пользователя из кэша или базы данных
 
   if (user) {
-    // Отправляем данные пользователя в ответном сообщении
     ctx.reply(`Информация о пользователе: ${JSON.stringify(user)}`);
   } else {
     ctx.reply("Информация о пользователе не найдена.");

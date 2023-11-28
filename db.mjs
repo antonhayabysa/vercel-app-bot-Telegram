@@ -1,13 +1,24 @@
 import { MongoClient } from "mongodb";
 
+let dbInstance = null;
+
 export async function connectToMongoDB() {
-  try {
-    const client = new MongoClient(process.env.MONGODB);
-    await client.connect();
-    console.log("Connected to MongoDB");
-    return client.db(); // Возвращает экземпляр базы данных
-  } catch (error) {
-    console.error("Failed to connect to MongoDB:", error);
-    process.exit(1);
+  if (!dbInstance) {
+    try {
+      const client = new MongoClient(process.env.MONGODB);
+      await client.connect();
+      dbInstance = client.db(); // Сохраняем экземпляр базы данных
+      console.log("Connected to MongoDB");
+    } catch (error) {
+      console.error("Failed to connect to MongoDB:", error);
+      process.exit(1);
+    }
   }
+  return dbInstance;
+}
+
+export async function fetchUser(userId) {
+  const db = await connectToMongoDB();
+  const usersCollection = db.collection("Users");
+  return await usersCollection.findOne({ id: userId });
 }
