@@ -19,6 +19,7 @@ function mainMenu() {
 
 // Обработчик команды /start
 bot.command("start", (ctx) => {
+  console.log(ctx.message);
   ctx.reply("Добро пожаловать в меню детского сада!", {
     reply_markup: mainMenu(),
   });
