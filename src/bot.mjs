@@ -1,11 +1,16 @@
 import { Bot, InlineKeyboard } from "grammy";
 import { connectToMongoDB, fetchUser as findUserInDB } from "../db.mjs";
 
-export const { TELEGRAM_BOT_TOKEN: token, SECRET_TOKEN: secretToken } =
-  process.env;
+export const {
+  // Telegram bot token from t.me/BotFather
+  TELEGRAM_BOT_TOKEN: token,
 
+  // Secret token to validate incoming updates
+  TELEGRAM_SECRET_TOKEN: secretToken = String(token).split(":").pop(),
+} = process.env;
+
+// Default grammY bot instance
 export const bot = new Bot(token);
-
 function mainMenu() {
   return new InlineKeyboard()
     .text("Расписание", "schedule")
