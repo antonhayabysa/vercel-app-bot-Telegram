@@ -1,10 +1,9 @@
 import { Bot, InlineKeyboard } from "grammy";
-import { connectToMongoDB, fetchUser } from "../db.mjs";
+import { connectToMongoDB, fetchUser as fetchUserFromDB } from "../db.mjs";
 
 export const { TELEGRAM_BOT_TOKEN: token } = process.env;
 export const bot = new Bot(token);
 
-// Расширенное главное меню
 function mainMenu() {
   return new InlineKeyboard()
     .text("Расписание", "schedule")
@@ -25,12 +24,11 @@ async function getUserData(userId) {
   if (userCache.has(userId)) {
     return userCache.get(userId);
   }
-  const user = await fetchUser(userId);
+  const user = await fetchUserFromDB(userId);
   userCache.set(userId, user);
   return user;
 }
 
-// Функция для обновления или добавления пользователя в MongoDB
 async function fetchUser(data) {
   const db = await connectToMongoDB();
   const usersCollection = db.collection("Users");
@@ -41,11 +39,9 @@ async function fetchUser(data) {
     { upsert: true }
   );
 
-  // Получение и возврат данных пользователя
   return await usersCollection.findOne({ id: data.id });
 }
 
-// Обработчик команды /start
 bot.command("start", async (ctx) => {
   const userId = ctx.from.id;
   const name = ctx.from.first_name;
@@ -64,7 +60,6 @@ bot.command("start", async (ctx) => {
   });
 });
 
-// Обработчик команды /user
 bot.command("user", async (ctx) => {
   const userId = ctx.from.id;
   const user = await getUserData(userId);
@@ -76,11 +71,9 @@ bot.command("user", async (ctx) => {
   }
 });
 
-// Дополнительные обработчики для новых кнопок
 bot.callbackQuery("faq", (ctx) => ctx.reply("Здесь будет информация FAQ..."));
 bot.callbackQuery("feedback", (ctx) => ctx.reply("Спасибо за ваш отзыв!"));
 
-// Расширенная обработка текстовых сообщений
 bot.on("message:text", (ctx) => {
   const text = ctx.message.text.toLowerCase();
 
@@ -91,7 +84,6 @@ bot.on("message:text", (ctx) => {
     case "где нас найти?":
       ctx.reply("Наши контакты и адрес...");
       break;
-    // Другие часто задаваемые вопросы
     default:
       ctx.reply("Я вас не понимаю. Используйте команды меню для навигации.");
   }

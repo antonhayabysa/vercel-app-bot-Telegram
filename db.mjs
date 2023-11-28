@@ -7,7 +7,7 @@ export async function connectToMongoDB() {
     try {
       const client = new MongoClient(process.env.MONGODB);
       await client.connect();
-      dbInstance = client.db(); // Сохраняем экземпляр базы данных
+      dbInstance = client.db();
       console.log("Connected to MongoDB");
     } catch (error) {
       console.error("Failed to connect to MongoDB:", error);
