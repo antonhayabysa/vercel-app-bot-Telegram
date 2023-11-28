@@ -1,7 +1,7 @@
 import { getURL } from "vercel-grammy";
 import bot from "../src/bot.mjs";
 
-const { VERCEL_ENV, SECRET_TOKEN } = process.env;
+const { VERCEL_ENV } = process.env;
 
 // Список разрешенных окружений
 const allowedEnvs = ["production", "preview"];
@@ -16,14 +16,13 @@ if (!allowedEnvs.includes(VERCEL_ENV)) {
 const url = getURL({ path: "api/update" });
 
 // Параметры настройки webhook
-const options = { secret_token: SECRET_TOKEN };
+const options = { };
 
 // Установка webhook
 try {
   await bot.api.setWebhook(url, options);
   const webhookInfo = await bot.api.getWebhookInfo();
   console.info("Webhook установлен на URL:", webhookInfo.url);
-  console.info("Секретный токен:", SECRET_TOKEN);
 } catch (error) {
   console.error("Ошибка при установке webhook:", error);
   process.exit(1);
