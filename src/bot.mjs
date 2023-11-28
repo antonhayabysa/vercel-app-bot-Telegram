@@ -1,13 +1,10 @@
 import { Bot, InlineKeyboard } from "grammy";
+import { connectToMongoDB } from "./db.mjs";
 
-export const {
-  TELEGRAM_BOT_TOKEN: token,
-  TELEGRAM_SECRET_TOKEN: secretToken = String(token).split(":").pop(),
-} = process.env;
+export const { TELEGRAM_BOT_TOKEN: token } = process.env;
 
 export const bot = new Bot(token);
 
-// Функция для создания главного меню
 function mainMenu() {
   return new InlineKeyboard()
     .text("Расписание", "schedule")
@@ -17,12 +14,45 @@ function mainMenu() {
     .text("Связь с воспитателями", "contact");
 }
 
+// Функция для обновления или добавления пользователя в MongoDB
+async function fetchUser(data) {
+  const db = await connectToMongoDB();
+  const usersCollection = db.collection("Users");
+
+  await usersCollection.updateOne(
+    { id: data.id },
+    { $set: data },
+    { upsert: true }
+  );
+
+  // Получение и возврат данных пользователя
+  return await usersCollection.findOne({ id: data.id });
+}
+
 // Обработчик команды /start
-bot.command("start", (ctx) => {
-  console.log(ctx.message);
+bot.command("start", async (ctx) => {
+  const userData = {
+    id: ctx.from.id,
+    name: ctx.from.first_name,
+    username: ctx.from.username,
+  };
+
+  await fetchUser(userData);
   ctx.reply("Добро пожаловать в меню детского сада!", {
     reply_markup: mainMenu(),
   });
+});
+
+bot.command("user", async (ctx) => {
+  const userId = ctx.from.id; // Получаем ID пользователя, который отправил команду
+  const user = await fetchUser({ id: userId }); // Используем fetchUser для получения данных пользователя
+
+  if (user) {
+    // Отправляем данные пользователя в ответном сообщении
+    ctx.reply(`Информация о пользователе: ${JSON.stringify(user)}`);
+  } else {
+    ctx.reply("Информация о пользователе не найдена.");
+  }
 });
 
 // Обработчики для каждой кнопки
@@ -42,7 +72,6 @@ bot.on("message:text", (ctx) => {
   } else if (text.includes("режим работы")) {
     ctx.reply("Мы работаем с 8:00 до 19:00...");
   } else {
-    // Ответ по умолчанию, если текст не распознан
     ctx.reply("Я вас не понимаю. Используйте команды меню для навигации.");
   }
 });
