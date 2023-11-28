@@ -5,7 +5,7 @@ let dbInstance = null;
 export async function connectToMongoDB() {
   if (!dbInstance) {
     try {
-      const client = new MongoClient(process.env.MONGODB);
+      const client = new MongoClient(process.env.MONGODB_URI);
       await client.connect();
       dbInstance = client.db();
       console.log("Connected to MongoDB");
