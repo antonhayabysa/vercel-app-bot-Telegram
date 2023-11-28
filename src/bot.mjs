@@ -30,6 +30,7 @@ async function getUserData(userId) {
 }
 
 bot.command("start", async (ctx) => {
+  console.log(ctx.message);
   const userId = ctx.from.id;
   const name = ctx.from.first_name;
   const userData = await getUserData(userId);
