@@ -1,10 +1,9 @@
 import { Bot, InlineKeyboard } from "grammy";
 import { connectToMongoDB, fetchUser as findUserInDB } from "../db.mjs";
 
-export const { TELEGRAM_BOT_TOKEN: token, SECRET_TOKEN: secretToken } =
-  process.env;
+// Экспортируем bot для использования в других модулях
+export const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN);
 
-export const bot = new Bot(token);
 function mainMenu() {
   return new InlineKeyboard()
     .text("Расписание", "schedule")
@@ -30,26 +29,13 @@ async function getUserData(userId) {
   return user;
 }
 
-async function updateUser(data) {
-  const db = await connectToMongoDB();
-  const usersCollection = db.collection("Users");
-
-  await usersCollection.updateOne(
-    { id: data.id },
-    { $set: data },
-    { upsert: true }
-  );
-
-  return await usersCollection.findOne({ id: data.id });
-}
-
 bot.command("start", async (ctx) => {
   const userId = ctx.from.id;
   const name = ctx.from.first_name;
   const userData = await getUserData(userId);
 
   if (!userData) {
-    await updateUser({
+    await findUserInDB({
       id: userId,
       name,
       username: ctx.from.username,
@@ -89,3 +75,5 @@ bot.on("message:text", (ctx) => {
       ctx.reply("Я вас не понимаю. Используйте команды меню для навигации.");
   }
 });
+
+export default bot;

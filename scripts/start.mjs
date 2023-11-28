@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { bot } from "../src/bot.mjs";
+import bot from "../src/bot.mjs";
 
-// Starts bot in long-polling mode
+// Запуск бота в режиме long-polling
 await bot.start();
