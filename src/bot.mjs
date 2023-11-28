@@ -1,5 +1,5 @@
 import { Bot, InlineKeyboard } from "grammy";
-import { connectToMongoDB } from "./db.mjs";
+import { connectToMongoDB } from "../db.mjs";
 
 export const { TELEGRAM_BOT_TOKEN: token } = process.env;
 
