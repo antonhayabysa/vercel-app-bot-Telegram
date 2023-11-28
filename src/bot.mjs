@@ -43,7 +43,7 @@ bot.command("start", async (ctx) => {
   });
 });
 
-bot.command("user", async (ctx) => {
+bot.on("user", async (ctx) => {
   const userId = ctx.from.id; // Получаем ID пользователя, который отправил команду
   const user = await fetchUser({ id: userId }); // Используем fetchUser для получения данных пользователя
 
