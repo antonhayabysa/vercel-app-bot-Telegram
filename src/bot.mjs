@@ -1,7 +1,8 @@
 import { Bot, InlineKeyboard } from "grammy";
 import { connectToMongoDB, fetchUser as findUserInDB } from "../db.mjs";
 
-export const { TELEGRAM_BOT_TOKEN: token } = process.env;
+export const { TELEGRAM_BOT_TOKEN: token, SECRET_TOKEN: secretToken } =
+  process.env;
 export const bot = new Bot(token);
 
 function mainMenu() {
