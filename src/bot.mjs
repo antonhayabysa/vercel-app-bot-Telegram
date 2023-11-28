@@ -2,16 +2,20 @@ import { Bot, InlineKeyboard } from "grammy";
 import { connectToMongoDB, fetchUser } from "../db.mjs";
 
 export const { TELEGRAM_BOT_TOKEN: token } = process.env;
-
 export const bot = new Bot(token);
 
+// Расширенное главное меню
 function mainMenu() {
   return new InlineKeyboard()
     .text("Расписание", "schedule")
     .row()
     .text("Мероприятия", "events")
     .row()
-    .text("Связь с воспитателями", "contact");
+    .text("Связь с воспитателями", "contact")
+    .row()
+    .text("FAQ", "faq")
+    .row()
+    .text("Оставить отзыв", "feedback");
 }
 
 // Кэш для хранения данных пользователей
@@ -44,18 +48,18 @@ async function fetchUser(data) {
 // Обработчик команды /start
 bot.command("start", async (ctx) => {
   const userId = ctx.from.id;
+  const name = ctx.from.first_name;
   const userData = await getUserData(userId);
 
   if (!userData) {
-    // Если данные о пользователе не найдены в кэше, добавляем пользователя в базу данных
     await fetchUser({
       id: userId,
-      name: ctx.from.first_name,
+      name,
       username: ctx.from.username,
     });
   }
 
-  ctx.reply("Добро пожаловать в меню детского сада!", {
+  ctx.reply(`Добро пожаловать в меню детского сада, ${name}!`, {
     reply_markup: mainMenu(),
   });
 });
@@ -63,7 +67,7 @@ bot.command("start", async (ctx) => {
 // Обработчик команды /user
 bot.command("user", async (ctx) => {
   const userId = ctx.from.id;
-  const user = await getUserData(userId); // Получаем данные пользователя из кэша или базы данных
+  const user = await getUserData(userId);
 
   if (user) {
     ctx.reply(`Информация о пользователе: ${JSON.stringify(user)}`);
@@ -72,23 +76,23 @@ bot.command("user", async (ctx) => {
   }
 });
 
-// Обработчики для каждой кнопки
-bot.callbackQuery("schedule", (ctx) =>
-  ctx.reply("Здесь будет информация о расписании...")
-);
-bot.callbackQuery("events", (ctx) =>
-  ctx.reply("Здесь будет информация о мероприятиях...")
-);
-bot.callbackQuery("contact", (ctx) => ctx.reply("Контакты воспитателей: ..."));
+// Дополнительные обработчики для новых кнопок
+bot.callbackQuery("faq", (ctx) => ctx.reply("Здесь будет информация FAQ..."));
+bot.callbackQuery("feedback", (ctx) => ctx.reply("Спасибо за ваш отзыв!"));
 
 // Расширенная обработка текстовых сообщений
 bot.on("message:text", (ctx) => {
   const text = ctx.message.text.toLowerCase();
-  if (text.includes("стоимость")) {
-    ctx.reply("Стоимость наших услуг составляет...");
-  } else if (text.includes("режим работы")) {
-    ctx.reply("Мы работаем с 8:00 до 19:00...");
-  } else {
-    ctx.reply("Я вас не понимаю. Используйте команды меню для навигации.");
+
+  switch (text) {
+    case "как записаться?":
+      ctx.reply("Информация о процедуре записи...");
+      break;
+    case "где нас найти?":
+      ctx.reply("Наши контакты и адрес...");
+      break;
+    // Другие часто задаваемые вопросы
+    default:
+      ctx.reply("Я вас не понимаю. Используйте команды меню для навигации.");
   }
 });
