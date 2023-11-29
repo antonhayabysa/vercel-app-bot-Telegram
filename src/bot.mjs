@@ -1,5 +1,5 @@
 import { Bot, InlineKeyboard } from "grammy";
-import { fetchUser as findUserInDB } from "../db.mjs";
+import { fetchUser as findUserInDB, addMessageToUser } from "../db.mjs";
 
 // Экспортируем bot для использования в других модулях
 export const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN);
@@ -56,6 +56,25 @@ bot.command("user", async (ctx) => {
     ctx.reply(`Информация о пользователе: ${JSON.stringify(user)}`);
   } else {
     ctx.reply("Информация о пользователе не найдена.");
+  }
+});
+bot.on("message:text", async (ctx) => {
+  const userId = ctx.from.id;
+  const text = ctx.message.text;
+
+  // Добавляем сообщение в базу данных
+  await addMessageToUser(userId, text);
+
+  // Обрабатываем текст сообщения
+  switch (text.toLowerCase()) {
+    case "как записаться?":
+      ctx.reply("Информация о процедуре записи...");
+      break;
+    case "где нас найти?":
+      ctx.reply("Наши контакты и адрес...");
+      break;
+    default:
+      ctx.reply("Я вас не понимаю. Используйте команды меню для навигации.");
   }
 });
 
