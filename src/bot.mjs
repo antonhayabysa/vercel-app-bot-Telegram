@@ -1,24 +1,33 @@
 import { Bot, InlineKeyboard } from "grammy";
-import { fetchUser as findUserInDB, addMessageToUser } from "../db.mjs";
+import {
+  findUserInDB,
+  addMessageToUser,
+  getFAQ,
+  getTranslation,
+} from "../db.mjs";
 
-// Экспортируем bot для использования в других модулях
 export const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN);
 
-function mainMenu() {
-  return new InlineKeyboard()
-    .text("Расписание", "schedule")
-    .row()
-    .text("Мероприятия", "events")
-    .row()
-    .text("Связь с воспитателями", "contact")
-    .row()
-    .text("FAQ", "faq")
-    .row()
-    .text("Оставить отзыв", "feedback");
-}
-
-// Кэш для хранения данных пользователей
 const userCache = new Map();
+
+async function mainMenu(lang = "uk") {
+  const schedule = await getTranslation("schedule", lang);
+  const events = await getTranslation("events", lang);
+  const contact = await getTranslation("contact", lang);
+  const faq = await getTranslation("faq", lang);
+  const feedback = await getTranslation("feedback", lang);
+
+  return new InlineKeyboard()
+    .text(schedule, "schedule")
+    .row()
+    .text(events, "events")
+    .row()
+    .text(contact, "contact")
+    .row()
+    .text(faq, "faq")
+    .row()
+    .text(feedback, "feedback");
+}
 
 async function getUserData(userId) {
   if (userCache.has(userId)) {
@@ -29,23 +38,72 @@ async function getUserData(userId) {
   return user;
 }
 
+const languageKeyboard = new InlineKeyboard()
+  .text("🇺🇦 Українська", "lang_uk")
+  .row()
+  .text("🇬🇧 English", "lang_en");
+
 bot.command("start", async (ctx) => {
-  console.log(ctx.message);
   const userId = ctx.from.id;
   const name = ctx.from.first_name;
-  const userData = await getUserData(userId);
+  const username = ctx.from.username;
 
-  if (!userData) {
-    await findUserInDB({
-      id: userId,
-      name,
-      username: ctx.from.username,
-    });
+  let userData = await findUserInDB(userId, name, username);
+  userCache.set(userId, userData);
+
+  ctx.reply("Choose your language / Оберіть мову:", {
+    reply_markup: languageKeyboard,
+  });
+});
+
+bot.callbackQuery(/^lang_(uk|en)$/, async (ctx) => {
+  const selectedLang = ctx.callbackQuery.data.split("_")[1];
+  const userId = ctx.from.id;
+
+  userCache.set(userId, { ...userCache.get(userId), lang: selectedLang });
+  const welcomeMessage = await getTranslation("welcome_message", selectedLang);
+
+  ctx.reply(`${welcomeMessage}, ${ctx.from.first_name}!`, {
+    reply_markup: await mainMenu(selectedLang),
+  });
+});
+
+async function generateFAQMenu(lang) {
+  const faqData = await getFAQ();
+  const keyboard = new InlineKeyboard();
+
+  for (const faq of faqData) {
+    const question = await getTranslation(faq.question[lang], lang);
+    keyboard.text(question, `faq_${faq._id}`).row();
   }
 
-  ctx.reply(`Добро пожаловать в меню детского сада, ${name}!`, {
-    reply_markup: mainMenu(),
+  return keyboard;
+}
+
+bot.callbackQuery("faq", async (ctx) => {
+  const userId = ctx.from.id;
+  const lang = userCache.get(userId)?.lang || "uk";
+  const faqKeyboard = await generateFAQMenu(lang);
+
+  ctx.reply(await getTranslation("select_question", lang), {
+    reply_markup: faqKeyboard,
   });
+});
+
+bot.callbackQuery(/^faq_/, async (ctx) => {
+  const faqId = ctx.callbackQuery.data.split("_")[1];
+  const faqData = await getFAQ();
+  const selectedFAQ = faqData.find((faq) => faq._id.toString() === faqId);
+
+  if (selectedFAQ) {
+    const lang = userCache.get(ctx.from.id)?.lang || "uk";
+    const question = await getTranslation(selectedFAQ.question[lang], lang);
+    const answer = await getTranslation(selectedFAQ.answer[lang], lang);
+
+    ctx.reply(`${question}\n${answer}`);
+  } else {
+    ctx.reply("Извините, информация по этому вопросу не найдена.");
+  }
 });
 
 bot.command("user", async (ctx) => {
@@ -58,42 +116,29 @@ bot.command("user", async (ctx) => {
     ctx.reply("Информация о пользователе не найдена.");
   }
 });
+
 bot.on("message:text", async (ctx) => {
   const userId = ctx.from.id;
   const text = ctx.message.text;
-
-  // Добавляем сообщение в базу данных
   await addMessageToUser(userId, text);
+  const lang = userCache.get(userId)?.lang || "uk";
 
-  // Обрабатываем текст сообщения
   switch (text.toLowerCase()) {
     case "как записаться?":
-      ctx.reply("Информация о процедуре записи...");
+      ctx.reply(await getTranslation("how_to_register", lang));
       break;
     case "где нас найти?":
-      ctx.reply("Наши контакты и адрес...");
+      ctx.reply(await getTranslation("where_to_find_us", lang));
       break;
     default:
-      ctx.reply("Я вас не понимаю. Используйте команды меню для навигации.");
+      ctx.reply(await getTranslation("do_not_understand", lang));
   }
 });
 
-bot.callbackQuery("faq", (ctx) => ctx.reply("Здесь будет информация FAQ..."));
-bot.callbackQuery("feedback", (ctx) => ctx.reply("Спасибо за ваш отзыв!"));
-
-bot.on("message:text", (ctx) => {
-  const text = ctx.message.text.toLowerCase();
-
-  switch (text) {
-    case "как записаться?":
-      ctx.reply("Информация о процедуре записи...");
-      break;
-    case "где нас найти?":
-      ctx.reply("Наши контакты и адрес...");
-      break;
-    default:
-      ctx.reply("Я вас не понимаю. Используйте команды меню для навигации.");
-  }
+// Обработчик для неизвестных команд
+bot.on(":text", async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || "uk";
+  ctx.reply(await getTranslation("do_not_understand", lang));
 });
 
 export default bot;
