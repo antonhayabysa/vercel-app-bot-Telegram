@@ -97,10 +97,9 @@ bot.callbackQuery(/^faq_/, async (ctx) => {
 
   if (selectedFAQ) {
     const lang = userCache.get(ctx.from.id)?.lang || "uk";
-    const question = await getTranslation(selectedFAQ.question[lang], lang);
     const answer = await getTranslation(selectedFAQ.answer[lang], lang);
 
-    ctx.reply(`${question}\n${answer}`);
+    ctx.reply(answer);
   } else {
     ctx.reply("Извините, информация по этому вопросу не найдена.");
   }
