@@ -1,4 +1,4 @@
-import { Bot, InlineKeyboard } from "grammy";
+import { Bot, InlineKeyboard, Keyboard } from "grammy";
 import {
   findUserInDB,
   addMessageToUser,
@@ -38,10 +38,11 @@ async function getUserData(userId) {
   return user;
 }
 
-const languageKeyboard = new InlineKeyboard()
-  .text("🇺🇦 Українська", "lang_uk")
-  .row()
-  .text("🇬🇧 English", "lang_en");
+const languageKeyboard = new Keyboard()
+  .text("🇺🇦 Українська")
+  .text("🇬🇧 English")
+  .resized()
+  .build();
 
 bot.command("start", async (ctx) => {
   const userId = ctx.from.id;
@@ -52,12 +53,12 @@ bot.command("start", async (ctx) => {
   userCache.set(userId, userData);
 
   ctx.reply("Choose your language / Оберіть мову:", {
-    reply_markup: languageKeyboard,
+    reply_markup: { keyboard: languageKeyboard, resize_keyboard: true },
   });
 });
 
-bot.callbackQuery(/^lang_(uk|en)$/, async (ctx) => {
-  const selectedLang = ctx.callbackQuery.data.split("_")[1];
+bot.hears(["🇺🇦 Українська", "🇬🇧 English"], async (ctx) => {
+  const selectedLang = ctx.message.text === "🇺🇦 Українська" ? "uk" : "en";
   const userId = ctx.from.id;
 
   userCache.set(userId, { ...userCache.get(userId), lang: selectedLang });
