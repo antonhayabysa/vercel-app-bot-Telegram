@@ -12,7 +12,7 @@
     "test": "node --watch -r dotenv/config test.mjs"
   },
   "dependencies": {
-    "grammy": "^1.19.2",
+    "grammy": "^1.20.3",
     "mongodb": "^6.3.0",
     "vercel-grammy": "^0.2.1"
   },
