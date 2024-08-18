@@ -10,24 +10,38 @@ export const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN);
 
 const userCache = new Map();
 
+
+
 async function mainMenu(lang = "uk") {
   const schedule = await getTranslation("schedule", lang);
   const events = await getTranslation("events", lang);
   const contact = await getTranslation("contact", lang);
   const faq = await getTranslation("faq", lang);
   const feedback = await getTranslation("feedback", lang);
+  const services = await getTranslation("services", lang); // Новый раздел: Що ми пропонуємо?
+  const directions = await getTranslation("directions", lang); // Новый раздел: Наші напрямки
+  const availability = await getTranslation("availability", lang); // Новый раздел: У саду доступні
+  const scheduleInfo = await getTranslation("schedule_info", lang); // Новый раздел: Режим дня у садку
+  const pricing = await getTranslation("pricing", lang); // Новый раздел: Вартість послуг та години роботи
+  const safety = await getTranslation("safety", lang); // Новый раздел: Безпека
 
   return new InlineKeyboard()
     .text(schedule, "schedule")
-    .row()
     .text(events, "events")
-    .row()
     .text(contact, "contact")
-    .row()
+    .row() // Новая строка для размещения элементов в ряд
     .text(faq, "faq")
-    .row()
-    .text(feedback, "feedback");
+    .text(feedback, "feedback")
+    .row() // Новая строка для размещения элементов в ряд
+    .text(services, "services")
+    .text(directions, "directions")
+    .text(availability, "availability")
+    .row() // Новая строка для размещения элементов в ряд
+    .text(scheduleInfo, "schedule_info")
+    .text(pricing, "pricing")
+    .text(safety, "safety");
 }
+
 
 async function getUserData(userId) {
   if (userCache.has(userId)) {
@@ -62,9 +76,9 @@ bot.hears(["🇺🇦 Українська", "🇬🇧 English"], async (ctx) => 
   const userId = ctx.from.id;
 
   userCache.set(userId, { ...userCache.get(userId), lang: selectedLang });
-  const welcomeMessage = await getTranslation("welcome_message", selectedLang);
+  const welcomeMessage = await getTranslation("correctional_kindergarten_mimi", selectedLang);
 
-  ctx.reply(`${welcomeMessage}, ${ctx.from.first_name}!`, {
+  ctx.reply(`${ctx.from.first_name}, ${welcomeMessage}`, {
     reply_markup: await mainMenu(selectedLang),
   });
 });
@@ -105,6 +119,8 @@ bot.callbackQuery(/^faq_/, async (ctx) => {
     ctx.reply("Извините, информация по этому вопросу не найдена.");
   }
 });
+
+
 
 bot.command("user", async (ctx) => {
   const userId = ctx.from.id;

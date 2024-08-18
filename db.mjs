@@ -62,3 +62,4 @@ export async function getTranslation(key, lang) {
   const translation = await languagesCollection.findOne({ key: key });
   return translation ? translation[lang] : key;
 }
+
