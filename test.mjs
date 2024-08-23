@@ -1,9 +1,9 @@
-// import { connectToMongoDB } from "./db.mjs";
+// import { connectToMongoDB } from './db.mjs';
 // const test = await connectToMongoDB();
 
-// await test.collection("Users").insertOne({ id: 1 });
+// await test.collection('Users').insertOne({ id: 1 });
 
-// console.log(await test.collection("Users").insertOne({ id: 1 }));
+// console.log(await test.collection('Users').insertOne({ id: 1 }));
 
 // import {
 //   findUserInDB,

@@ -7,19 +7,27 @@ import {
   getDetailAnswer,
   getDirectionAnswer,
   getAvailabilityAnswer,
+  getScheduleInfoAnswer,
+  getSafetyInfoAnswer,
+  getContactInfoAnswer,
+  getPricingDetailAnswer,
 } from '../db.mjs';
 
 export const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN);
 
 const userCache = new Map(); // Кэш для хранения данных пользователей
 
+// Определение клавиатуры для выбора языка
+const languageKeyboard = new Keyboard()
+  .text('🇺🇦 Українська')
+  .text('🇬🇧 English')
+  .resized()
+  .build();
+
 // Функция создания главного меню
 async function mainMenu(lang = 'uk') {
-  const schedule = await getTranslation('schedule', lang);
-  const events = await getTranslation('events', lang);
   const contact = await getTranslation('contact', lang);
   const faq = await getTranslation('faq', lang);
-  const feedback = await getTranslation('feedback', lang);
   const services = await getTranslation('services', lang);
   const directions = await getTranslation('directions', lang);
   const availability = await getTranslation('availability', lang);
@@ -28,19 +36,20 @@ async function mainMenu(lang = 'uk') {
   const safety = await getTranslation('safety', lang);
 
   return new InlineKeyboard()
-    .text(schedule, 'schedule')
-    .text(events, 'events')
     .text(contact, 'contact')
     .row()
     .text(faq, 'faq')
-    .text(feedback, 'feedback')
     .row()
     .text(services, 'services')
+    .row()
     .text(directions, 'directions')
+    .row()
     .text(availability, 'availability')
     .row()
     .text(scheduleInfo, 'schedule_info')
+    .row()
     .text(pricing, 'pricing')
+    .row()
     .text(safety, 'safety');
 }
 
@@ -74,6 +83,86 @@ bot.hears(['🇺🇦 Українська', '🇬🇧 English'], async (ctx) => 
   });
 });
 
+// Обработка команды выбора режима дня
+bot.callbackQuery('schedule_info', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const selectOption = await getTranslation('select_option', lang);
+
+  const fullDay = await getTranslation('full_day', lang);
+  const halfDay = await getTranslation('half_day', lang);
+  const speechGroup = await getTranslation('speech_group', lang);
+  const preSchool = await getTranslation('pre_school', lang);
+
+  const keyboard = new InlineKeyboard()
+    .text(fullDay, 'full_day')
+    .row()
+    .text(halfDay, 'half_day')
+    .row()
+    .text(speechGroup, 'speech_group')
+    .row()
+    .text(preSchool, 'pre_school');
+
+  ctx.reply(selectOption, {
+    reply_markup: keyboard,
+  });
+});
+
+// Обработка подменю для каждого режима дня
+bot.callbackQuery('full_day', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const fullDayData = await getScheduleInfoAnswer('full_day', lang);
+  ctx.reply(fullDayData || 'Информация недоступна.');
+});
+
+bot.callbackQuery('half_day', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const halfDayData = await getScheduleInfoAnswer('half_day', lang);
+  ctx.reply(halfDayData || 'Информация недоступна.');
+});
+
+bot.callbackQuery('speech_group', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const speechGroupData = await getScheduleInfoAnswer('speech_group', lang);
+  ctx.reply(speechGroupData || 'Информация недоступна.');
+});
+
+bot.callbackQuery('pre_school', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const preSchoolData = await getScheduleInfoAnswer('pre_school', lang);
+  ctx.reply(preSchoolData || 'Информация недоступна.');
+});
+
+// Добавляем обработчик для нового раздела "safety"
+bot.callbackQuery('safety', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const selectOption = await getTranslation('select_option', lang);
+
+  const bombShelter = await getTranslation('bomb_shelter', lang);
+  const cameras = await getTranslation('cameras', lang);
+
+  const keyboard = new InlineKeyboard()
+    .text(bombShelter, 'bomb_shelter')
+    .row()
+    .text(cameras, 'cameras');
+
+  ctx.reply(selectOption, {
+    reply_markup: keyboard,
+  });
+});
+
+// Обработка подменю для раздела "Безпека"
+bot.callbackQuery('bomb_shelter', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const bombShelterData = await getSafetyInfoAnswer('bomb_shelter_info', lang);
+  ctx.reply(bombShelterData || 'Информация недоступна.');
+});
+
+bot.callbackQuery('cameras', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const camerasData = await getSafetyInfoAnswer('cameras_info', lang);
+  ctx.reply(camerasData || 'Информация недоступна.');
+});
+
 // Добавляем обработчик для нового раздела "services"
 bot.callbackQuery('services', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
@@ -95,6 +184,119 @@ bot.callbackQuery('availability', async (ctx) => {
   ctx.reply(availabilityData || 'Информация недоступна.');
 });
 
+// Добавляем обработчик для нового раздела "pricing"
+bot.callbackQuery('pricing', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const selectOption = await getTranslation('select_option', lang);
+
+  const individualLessons = await getTranslation('individual_lessons', lang);
+  const groupPricing = await getTranslation('group_pricing', lang);
+  const workingHours = await getTranslation('working_hours', lang);
+  const discounts = await getTranslation('discounts', lang);
+  const pricing = await getTranslation('individual_lessons_pricing', lang);
+
+  const keyboard = new InlineKeyboard()
+    .text(individualLessons, 'individual_lessons')
+    .row()
+    .text(groupPricing, 'group_pricing')
+    .row()
+    .text(workingHours, 'working_hours')
+    .row()
+    .text(discounts, 'discounts')
+    .row()
+    .text(pricing, 'individual_lessons_pricing');
+
+  ctx.reply(selectOption, {
+    reply_markup: keyboard,
+  });
+});
+
+// Обработка подменю для раздела "Індивідуальні заняття"
+bot.callbackQuery('individual_lessons', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+
+  const defectologist = await getTranslation('defectologist', lang);
+  const neuropsychology = await getTranslation('neuropsychology', lang);
+  const neurologopedy = await getTranslation('neurologopedy', lang);
+  const sensoryIntegration = await getTranslation('sensory_integration', lang);
+  const logorhythmics = await getTranslation('logorhythmics', lang);
+
+  const keyboard = new InlineKeyboard()
+    .text(defectologist, 'defectologist')
+    .row()
+    .text(neuropsychology, 'neuropsychology')
+    .row()
+    .text(neurologopedy, 'neurologopedy')
+    .row()
+    .text(sensoryIntegration, 'sensory_integration')
+    .row()
+    .text(logorhythmics, 'logorhythmics');
+
+  ctx.reply(await getTranslation('select_option', lang), {
+    reply_markup: keyboard,
+  });
+});
+
+// Добавляем обработчики для каждого индивидуального занятия
+bot.callbackQuery('defectologist', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const detailData = await getPricingDetailAnswer('defectologist', lang);
+  ctx.reply(detailData || 'Информация недоступна.');
+});
+
+bot.callbackQuery('neuropsychology', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const detailData = await getPricingDetailAnswer('neuropsychology', lang);
+  ctx.reply(detailData || 'Информация недоступна.');
+});
+
+bot.callbackQuery('neurologopedy', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const detailData = await getPricingDetailAnswer('neurologopedy', lang);
+  ctx.reply(detailData || 'Информация недоступна.');
+});
+
+bot.callbackQuery('sensory_integration', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const detailData = await getPricingDetailAnswer('sensory_integration', lang);
+  ctx.reply(detailData || 'Информация недоступна.');
+});
+
+bot.callbackQuery('logorhythmics', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const detailData = await getPricingDetailAnswer('logorhythmics', lang);
+  ctx.reply(detailData || 'Информация недоступна.');
+});
+
+// Добавляем обработчики для других подменю в разделе "pricing"
+bot.callbackQuery('group_pricing', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const detailData = await getPricingDetailAnswer('group_pricing_info', lang);
+  ctx.reply(detailData || 'Информация недоступна.');
+});
+
+bot.callbackQuery('working_hours', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const detailData = await getPricingDetailAnswer('working_hours_info', lang);
+  ctx.reply(detailData || 'Информация недоступна.');
+});
+
+bot.callbackQuery('discounts', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const detailData = await getPricingDetailAnswer('discounts_info', lang);
+  ctx.reply(detailData || 'Информация недоступна.');
+});
+
+// Добавляем обработчик для кнопки "Вартість"
+bot.callbackQuery('individual_lessons_pricing', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const pricingInfo = await getPricingDetailAnswer(
+    'individual_lessons_pricing',
+    lang
+  ); // Получение данных из коллекции PricingDetails
+  ctx.reply(pricingInfo || 'Информация недоступна.');
+});
+
 // Обработка других запросов (FAQ, контактные данные и т.д.)
 async function generateFAQMenu(lang) {
   const faqData = await getFAQ();
@@ -107,6 +309,49 @@ async function generateFAQMenu(lang) {
 
   return keyboard;
 }
+
+// Добавляем обработчик для нового раздела "contact"
+bot.callbackQuery('contact', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const selectOption = await getTranslation('select_option', lang);
+
+  const socialNetworks = await getTranslation('social_networks', lang);
+  const contactUs = await getTranslation('contact_us', lang);
+  const address = await getTranslation('address', lang);
+
+  const keyboard = new InlineKeyboard()
+    .text(socialNetworks, 'social_networks')
+    .row()
+    .text(contactUs, 'contact_us')
+    .row()
+    .text(address, 'address');
+
+  ctx.reply(selectOption, {
+    reply_markup: keyboard,
+  });
+});
+
+// Обработка подменю для раздела "Контакты"
+bot.callbackQuery('social_networks', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const socialNetworksData = await getContactInfoAnswer(
+    'social_networks',
+    lang
+  );
+  ctx.reply(socialNetworksData || 'Информация недоступна.');
+});
+
+bot.callbackQuery('contact_us', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const contactUsData = await getContactInfoAnswer('contact_us', lang);
+  ctx.reply(contactUsData || 'Информация недоступна.');
+});
+
+bot.callbackQuery('address', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const addressData = await getContactInfoAnswer('address', lang);
+  ctx.reply(addressData || 'Информация недоступна.');
+});
 
 bot.callbackQuery('faq', async (ctx) => {
   const userId = ctx.from.id;

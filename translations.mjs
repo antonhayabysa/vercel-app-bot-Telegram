@@ -1,9 +1,9 @@
-const translations = {
-  ukrainian: {},
-  russian: {},
-  english: {},
-};
+// const translations = {
+//   ukrainian: {},
+//   russian: {},
+//   english: {},
+// };
 
-export function getTranslation(language, key) {
-  return translations[language]?.[key] || translations["ukrainian"][key];
-}
+// export function getTranslation(language, key) {
+//   return translations[language]?.[key] || translations["ukrainian"][key];
+// }
