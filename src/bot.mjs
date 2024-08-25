@@ -92,6 +92,8 @@ bot.callbackQuery('schedule_info', async (ctx) => {
   const halfDay = await getTranslation('half_day', lang);
   const speechGroup = await getTranslation('speech_group', lang);
   const preSchool = await getTranslation('pre_school', lang);
+  const extendedGroup = await getTranslation('extended_group', lang); // Новая кнопка
+  const freeSaturday = await getTranslation('free_saturday', lang); // Новая кнопка
 
   const keyboard = new InlineKeyboard()
     .text(fullDay, 'full_day')
@@ -100,10 +102,15 @@ bot.callbackQuery('schedule_info', async (ctx) => {
     .row()
     .text(speechGroup, 'speech_group')
     .row()
-    .text(preSchool, 'pre_school');
+    .text(preSchool, 'pre_school')
+    .row()
+    .text(extendedGroup, 'extended_group') // Новая кнопка
+    .row()
+    .text(freeSaturday, 'free_saturday'); // Новая кнопка
 
   ctx.reply(selectOption, {
     reply_markup: keyboard,
+    parse_mode: 'Markdown',
   });
 });
 
@@ -111,25 +118,49 @@ bot.callbackQuery('schedule_info', async (ctx) => {
 bot.callbackQuery('full_day', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
   const fullDayData = await getScheduleInfoAnswer('full_day', lang);
-  ctx.reply(fullDayData || 'Информация недоступна.');
+  ctx.reply(fullDayData || 'Информация недоступна.', {
+    parse_mode: 'Markdown',
+  });
 });
 
 bot.callbackQuery('half_day', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
   const halfDayData = await getScheduleInfoAnswer('half_day', lang);
-  ctx.reply(halfDayData || 'Информация недоступна.');
+  ctx.reply(halfDayData || 'Информация недоступна.', {
+    parse_mode: 'Markdown',
+  });
 });
 
 bot.callbackQuery('speech_group', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
   const speechGroupData = await getScheduleInfoAnswer('speech_group', lang);
-  ctx.reply(speechGroupData || 'Информация недоступна.');
+  ctx.reply(speechGroupData || 'Информация недоступна.', {
+    parse_mode: 'Markdown',
+  });
 });
 
 bot.callbackQuery('pre_school', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
   const preSchoolData = await getScheduleInfoAnswer('pre_school', lang);
-  ctx.reply(preSchoolData || 'Информация недоступна.');
+  ctx.reply(preSchoolData || 'Информация недоступна.', {
+    parse_mode: 'Markdown',
+  });
+});
+
+bot.callbackQuery('extended_group', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const extendedGroupData = await getScheduleInfoAnswer('extended_group', lang);
+  ctx.reply(extendedGroupData || 'Информация недоступна.', {
+    parse_mode: 'Markdown',
+  });
+});
+
+bot.callbackQuery('free_saturday', async (ctx) => {
+  const lang = userCache.get(ctx.from.id)?.lang || 'uk';
+  const freeSaturdayData = await getScheduleInfoAnswer('free_saturday', lang);
+  ctx.reply(freeSaturdayData || 'Информация недоступна.', {
+    parse_mode: 'Markdown',
+  });
 });
 
 // Добавляем обработчик для нового раздела "safety"
@@ -147,6 +178,7 @@ bot.callbackQuery('safety', async (ctx) => {
 
   ctx.reply(selectOption, {
     reply_markup: keyboard,
+    parse_mode: 'Markdown',
   });
 });
 
@@ -154,34 +186,44 @@ bot.callbackQuery('safety', async (ctx) => {
 bot.callbackQuery('bomb_shelter', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
   const bombShelterData = await getSafetyInfoAnswer('bomb_shelter_info', lang);
-  ctx.reply(bombShelterData || 'Информация недоступна.');
+  ctx.reply(bombShelterData || 'Информация недоступна.', {
+    parse_mode: 'Markdown',
+  });
 });
 
 bot.callbackQuery('cameras', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
   const camerasData = await getSafetyInfoAnswer('cameras_info', lang);
-  ctx.reply(camerasData || 'Информация недоступна.');
+  ctx.reply(camerasData || 'Информация недоступна.', {
+    parse_mode: 'Markdown',
+  });
 });
 
 // Добавляем обработчик для нового раздела "services"
 bot.callbackQuery('services', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
   const servicesData = await getDetailAnswer('services', lang);
-  ctx.reply(servicesData || 'Информация недоступна.');
+  ctx.reply(servicesData || 'Информация недоступна.', {
+    parse_mode: 'Markdown',
+  });
 });
 
 // Добавляем обработчик для нового раздела "directions"
 bot.callbackQuery('directions', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
   const directionsData = await getDirectionAnswer('directions', lang);
-  ctx.reply(directionsData || 'Информация недоступна.');
+  ctx.reply(directionsData || 'Информация недоступна.', {
+    parse_mode: 'Markdown',
+  });
 });
 
 // Добавляем обработчик для нового раздела "availability"
 bot.callbackQuery('availability', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
   const availabilityData = await getAvailabilityAnswer('availability', lang);
-  ctx.reply(availabilityData || 'Информация недоступна.');
+  ctx.reply(availabilityData || 'Информация недоступна.', {
+    parse_mode: 'Markdown',
+  });
 });
 
 // Добавляем обработчик для нового раздела "pricing"
@@ -208,6 +250,7 @@ bot.callbackQuery('pricing', async (ctx) => {
 
   ctx.reply(selectOption, {
     reply_markup: keyboard,
+    parse_mode: 'Markdown',
   });
 });
 
@@ -234,6 +277,7 @@ bot.callbackQuery('individual_lessons', async (ctx) => {
 
   ctx.reply(await getTranslation('select_option', lang), {
     reply_markup: keyboard,
+    parse_mode: 'Markdown',
   });
 });
 
@@ -241,50 +285,50 @@ bot.callbackQuery('individual_lessons', async (ctx) => {
 bot.callbackQuery('defectologist', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
   const detailData = await getPricingDetailAnswer('defectologist', lang);
-  ctx.reply(detailData || 'Информация недоступна.');
+  ctx.reply(detailData || 'Информация недоступна.', { parse_mode: 'Markdown' });
 });
 
 bot.callbackQuery('neuropsychology', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
   const detailData = await getPricingDetailAnswer('neuropsychology', lang);
-  ctx.reply(detailData || 'Информация недоступна.');
+  ctx.reply(detailData || 'Информация недоступна.', { parse_mode: 'Markdown' });
 });
 
 bot.callbackQuery('neurologopedy', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
   const detailData = await getPricingDetailAnswer('neurologopedy', lang);
-  ctx.reply(detailData || 'Информация недоступна.');
+  ctx.reply(detailData || 'Информация недоступна.', { parse_mode: 'Markdown' });
 });
 
 bot.callbackQuery('sensory_integration', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
   const detailData = await getPricingDetailAnswer('sensory_integration', lang);
-  ctx.reply(detailData || 'Информация недоступна.');
+  ctx.reply(detailData || 'Информация недоступна.', { parse_mode: 'Markdown' });
 });
 
 bot.callbackQuery('logorhythmics', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
   const detailData = await getPricingDetailAnswer('logorhythmics', lang);
-  ctx.reply(detailData || 'Информация недоступна.');
+  ctx.reply(detailData || 'Информация недоступна.', { parse_mode: 'Markdown' });
 });
 
 // Добавляем обработчики для других подменю в разделе "pricing"
 bot.callbackQuery('group_pricing', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
   const detailData = await getPricingDetailAnswer('group_pricing_info', lang);
-  ctx.reply(detailData || 'Информация недоступна.');
+  ctx.reply(detailData || 'Информация недоступна.', { parse_mode: 'Markdown' });
 });
 
 bot.callbackQuery('working_hours', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
   const detailData = await getPricingDetailAnswer('working_hours_info', lang);
-  ctx.reply(detailData || 'Информация недоступна.');
+  ctx.reply(detailData || 'Информация недоступна.', { parse_mode: 'Markdown' });
 });
 
 bot.callbackQuery('discounts', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
   const detailData = await getPricingDetailAnswer('discounts_info', lang);
-  ctx.reply(detailData || 'Информация недоступна.');
+  ctx.reply(detailData || 'Информация недоступна.', { parse_mode: 'Markdown' });
 });
 
 // Добавляем обработчик для кнопки "Вартість"
@@ -293,8 +337,28 @@ bot.callbackQuery('individual_lessons_pricing', async (ctx) => {
   const pricingInfo = await getPricingDetailAnswer(
     'individual_lessons_pricing',
     lang
-  ); // Получение данных из коллекции PricingDetails
-  ctx.reply(pricingInfo || 'Информация недоступна.');
+  );
+
+  if (pricingInfo) {
+    // Проверка на наличие якорной ссылки и создание кнопки для перехода
+    if (
+      pricingInfo.includes('[контакт](#contact_us)') ||
+      pricingInfo.includes('[contact](#contact_us)')
+    ) {
+      const modifiedAnswer = pricingInfo
+        .replace('[контакт](#contact_us)', 'контакт')
+        .replace('[contact](#contact_us)', 'contact');
+      const keyboard = new InlineKeyboard().text('Контакты', 'contact_us');
+      ctx.reply(modifiedAnswer, {
+        reply_markup: keyboard,
+        parse_mode: 'Markdown',
+      });
+    } else {
+      ctx.reply(pricingInfo, { parse_mode: 'Markdown' });
+    }
+  } else {
+    ctx.reply('Информация недоступна.', { parse_mode: 'Markdown' });
+  }
 });
 
 // Обработка других запросов (FAQ, контактные данные и т.д.)
@@ -328,6 +392,7 @@ bot.callbackQuery('contact', async (ctx) => {
 
   ctx.reply(selectOption, {
     reply_markup: keyboard,
+    parse_mode: 'Markdown',
   });
 });
 
@@ -338,21 +403,28 @@ bot.callbackQuery('social_networks', async (ctx) => {
     'social_networks',
     lang
   );
-  ctx.reply(socialNetworksData || 'Информация недоступна.');
+  ctx.reply(socialNetworksData || 'Информация недоступна.', {
+    parse_mode: 'Markdown',
+  });
 });
 
 bot.callbackQuery('contact_us', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
   const contactUsData = await getContactInfoAnswer('contact_us', lang);
-  ctx.reply(contactUsData || 'Информация недоступна.');
+  ctx.reply(contactUsData || 'Информация недоступна.', {
+    parse_mode: 'Markdown',
+  });
 });
 
 bot.callbackQuery('address', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
   const addressData = await getContactInfoAnswer('address', lang);
-  ctx.reply(addressData || 'Информация недоступна.');
+  ctx.reply(addressData || 'Информация недоступна.', {
+    parse_mode: 'Markdown',
+  });
 });
 
+// Обработка команды FAQ
 bot.callbackQuery('faq', async (ctx) => {
   const userId = ctx.from.id;
   const lang = userCache.get(userId)?.lang || 'uk';
@@ -360,9 +432,11 @@ bot.callbackQuery('faq', async (ctx) => {
 
   ctx.reply(await getTranslation('select_question', lang), {
     reply_markup: faqKeyboard,
+    parse_mode: 'Markdown',
   });
 });
 
+// Обработка каждого вопроса FAQ
 bot.callbackQuery(/^faq_/, async (ctx) => {
   const faqId = ctx.callbackQuery.data.split('_')[1];
   const faqData = await getFAQ();
@@ -372,7 +446,20 @@ bot.callbackQuery(/^faq_/, async (ctx) => {
     const lang = userCache.get(ctx.from.id)?.lang || 'uk';
     const answer = selectedFAQ.answer[lang];
 
-    ctx.reply(answer);
+    // Проверка на наличие якорной ссылки и создание кнопки для перехода
+    if (answer.includes('[Режим сада](#schedule_info)')) {
+      const modifiedAnswer = answer.replace(
+        '[Режим сада](#schedule_info)',
+        'Режим сада'
+      );
+      const keyboard = new InlineKeyboard().text('Режим сада', 'schedule_info');
+      ctx.reply(modifiedAnswer, {
+        reply_markup: keyboard,
+        parse_mode: 'Markdown',
+      });
+    } else {
+      ctx.reply(answer, { parse_mode: 'Markdown' });
+    }
   } else {
     ctx.reply('Извините, информация по этому вопросу не найдена.');
   }
@@ -384,7 +471,9 @@ bot.command('user', async (ctx) => {
   const user = await getUserData(userId);
 
   if (user) {
-    ctx.reply(`Информация о пользователе: ${JSON.stringify(user)}`);
+    ctx.reply(`Информация о пользователе: ${JSON.stringify(user)}`, {
+      parse_mode: 'Markdown',
+    });
   } else {
     ctx.reply('Информация о пользователе не найдена.');
   }
@@ -399,20 +488,28 @@ bot.on('message:text', async (ctx) => {
 
   switch (text.toLowerCase()) {
     case 'как записаться?':
-      ctx.reply(await getTranslation('how_to_register', lang));
+      ctx.reply(await getTranslation('how_to_register', lang), {
+        parse_mode: 'Markdown',
+      });
       break;
     case 'где нас найти?':
-      ctx.reply(await getTranslation('where_to_find_us', lang));
+      ctx.reply(await getTranslation('where_to_find_us', lang), {
+        parse_mode: 'Markdown',
+      });
       break;
     default:
-      ctx.reply(await getTranslation('do_not_understand', lang));
+      ctx.reply(await getTranslation('do_not_understand', lang), {
+        parse_mode: 'Markdown',
+      });
   }
 });
 
 // Обработка неизвестных команд
 bot.on(':text', async (ctx) => {
   const lang = userCache.get(ctx.from.id)?.lang || 'uk';
-  ctx.reply(await getTranslation('do_not_understand', lang));
+  ctx.reply(await getTranslation('do_not_understand', lang), {
+    parse_mode: 'Markdown',
+  });
 });
 
 export default bot;
