@@ -19,7 +19,7 @@
     "vercel-grammy": "^0.2.1"
   },
   "devDependencies": {
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.7"
   },
   "engines": {
     "node": "^18.0.0"
